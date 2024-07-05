@@ -121,10 +121,10 @@ public class EmployeeService {
     
     //従業員更新
     @Transactional
-    public ErrorKinds update(String code,Employee employee) {
+    public ErrorKinds update(Employee employee) {
+        Employee updateEmployee = findByCode(employee.getCode());
         // パスワードチェック
         if(employee.getPassword().isEmpty()) {
-            Employee updateEmployee = findByCode(code);
             employee.setPassword(updateEmployee.getPassword());
         }else {
             ErrorKinds result = employeePasswordCheck(employee);
@@ -133,6 +133,7 @@ public class EmployeeService {
             }
         }
         LocalDateTime now = LocalDateTime.now();
+        employee.setCreatedAt(updateEmployee.getCreatedAt());
         employee.setUpdatedAt(now);
         employeeRepository.save(employee);
         return ErrorKinds.SUCCESS;
