@@ -73,8 +73,8 @@ public class Employee {
     private LocalDateTime updatedAt;
     
     
-     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL) private
-     List<Report> reportList;
+     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL) 
+     private List<Report> reportList;
      
 
 }

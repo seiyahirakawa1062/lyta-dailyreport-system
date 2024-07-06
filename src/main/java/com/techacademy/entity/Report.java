@@ -47,8 +47,9 @@ public class Report {
     
     // 内容
     @Column(nullable = false)
-    private String content;   
-
+    private String content;
+    
+    
     // 削除フラグ(論理削除を行うため)
     @Column(columnDefinition="TINYINT", nullable = false)
     private boolean deleteFlg;
@@ -61,8 +62,8 @@ public class Report {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
     
+    
     @ManyToOne
     @JoinColumn(name = "employee_code", referencedColumnName = "code", nullable = false)
     private Employee employee;
-
 }
