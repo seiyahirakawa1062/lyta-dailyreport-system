@@ -35,11 +35,10 @@ public class ReportController {
 
     // 日報一覧画面
     @GetMapping
-    public String list(Model model) {
+    public String list(@AuthenticationPrincipal UserDetail userdetail,Model model) {
 
-        model.addAttribute("listSize", reportService.findAll().size());
-        model.addAttribute("reportList", reportService.findAll());
-
+        model.addAttribute("listSize", reportService.filterRole(userdetail).size());
+        model.addAttribute("reportList", reportService.filterRole(userdetail));
         return "reports/list";
     }
 
@@ -53,37 +52,37 @@ public class ReportController {
 
     // 日報新規登録画面
     @GetMapping(value = "/add")
-    public String create(@ModelAttribute Report report) {
-
+    public String create(@AuthenticationPrincipal UserDetail userdetail,@ModelAttribute Report report,Model model) {
+        model.addAttribute("employeeName", userdetail.getEmployee().getName());
         return "reports/new";
     }
 
     // 日報新規登録処理
     @PostMapping(value = "/add")
-    public String add(@Validated Report report, BindingResult res, Model model) {
+    public String add(@Validated Report report, BindingResult res, @AuthenticationPrincipal UserDetail userdetail,Model model) {
 
         // 入力チェック
         if (res.hasErrors()) {
-            return create(report);
+            return create(userdetail,report,model);
         }
 
         // 論理削除を行った日報番号を指定すると例外となるためtry~catchで対応
         // (findByIdでは削除フラグがTRUEのデータが取得出来ないため)
         try {
-            ErrorKinds result = reportService.save(null,report);
+            ErrorKinds result = reportService.save(report,userdetail);
 
             if (ErrorMessage.contains(result)) {
                 model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
-                return create(report);
+                return create(userdetail,report,model);
             }
 
         } catch (DataIntegrityViolationException e) {
             model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.DUPLICATE_EXCEPTION_ERROR),
                     ErrorMessage.getErrorValue(ErrorKinds.DUPLICATE_EXCEPTION_ERROR));
-            return create(report);
+            return create(userdetail,report,model);
         }
 
-        return "redirect:/repors";
+        return "redirect:/reports";
     }
 
     // 日報削除処理

@@ -1,6 +1,7 @@
 package com.techacademy.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -29,8 +30,13 @@ private final ReportRepository reportRepository;
 
     // 日報新規登録
     @Transactional
-    public ErrorKinds save(Employee employee,Report report) {
-        if(reportRepository.existsByEmployeeAndReportDate(employee,report.getReportDate())){
+    public ErrorKinds save(Report report,UserDetail userdetail) {
+        /*
+         * if(reportRepository.existsByEmployeeAndReportDate(employee,report.
+         * getReportDate())){ return ErrorKinds.DATECHECK_ERROR; }
+         */
+        
+        if(userdetail.getEmployee().getCreatedAt().toLocalDate().isEqual(report.getReportDate())) {
             return ErrorKinds.DATECHECK_ERROR;
         }
         report.setDeleteFlg(false);
@@ -58,6 +64,22 @@ private final ReportRepository reportRepository;
     // 日報一覧表示処理
     public List<Report> findAll() {
         return reportRepository.findAll();
+    }
+    
+    // 日報一覧管理権限なし表示処理
+    public List<Report> filterRole(UserDetail userdetail) {
+        List<Report> allReports = reportRepository.findAll();
+        List<Report> filterReports = new ArrayList<Report>();       
+        
+        if(userdetail.getEmployee().getRole().getValue().equals("一般")){
+            for(Report rep : allReports) {
+                if(rep.getEmployee().getName().equals(userdetail.getEmployee().getName())) {
+                    filterReports.add(rep);
+                }
+            }
+          return filterReports;  
+        }
+        return allReports;
     }
 
     // 1件を検索
