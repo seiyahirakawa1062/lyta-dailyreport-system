@@ -95,10 +95,18 @@ private final ReportRepository reportRepository;
     //日報更新
     @Transactional
     public ErrorKinds update(UserDetail userdetail,Report report,Integer id) {
-        if (reportRepository.existsByEmployeeAndReportDate(userdetail.getEmployee(), report.getReportDate()) 
-                && reportRepository.findById(id) != null) {
-            return ErrorKinds.DATECHECK_ERROR;
-          
+        // 更新対象レポートリスト
+        List<Report> reportList = reportRepository.findByEmployee(userdetail.getEmployee());
+        // 更新前レポート
+        Report beforeReport = reportRepository.findById(id).get();
+
+        //レポートリストがnullでないかつ同一ID作成かつレポート日付が重複している場合は更新する
+        if(reportList != null && beforeReport.getEmployee().getCode().equals(userdetail.getEmployee().getCode()) && !beforeReport.getReportDate().equals(report.getReportDate())) {
+            for(Report rep:reportList) {
+                if(rep.getReportDate().equals(report.getReportDate())) {
+                    return ErrorKinds.DATECHECK_ERROR;
+                }
+            }
         }
         
         Report updateReport = findById(report.getId());
