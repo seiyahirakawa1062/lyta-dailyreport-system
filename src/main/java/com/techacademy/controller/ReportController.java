@@ -59,7 +59,7 @@ public class ReportController {
 
     // 日報新規登録処理
     @PostMapping(value = "/add")
-    public String add(@Validated Report report, BindingResult res, @AuthenticationPrincipal UserDetail userdetail,Model model) {
+    public String add(@Validated Report report, BindingResult res, @AuthenticationPrincipal UserDetail userdetail,Employee employee,Model model) {
 
         // 入力チェック
         if (res.hasErrors()) {
@@ -103,7 +103,9 @@ public class ReportController {
     //更新情報取得
     
     @GetMapping(value = "/{id}/update")
-    public String getReport(@PathVariable("id") Integer id, Model model,@ModelAttribute Report report) {
+    public String getReport(@PathVariable("id") Integer id,@AuthenticationPrincipal UserDetail userdetail,Model model,@ModelAttribute Report report) {
+        model.addAttribute("employeeName", userdetail.getEmployee().getName());
+        
         if (id == null) {
             model.addAttribute("report",report);
             return "reports/update";
@@ -115,24 +117,24 @@ public class ReportController {
     
     // 日報更新処理
     @PostMapping(value = "/{id}/update")
-    public String update(@Validated Report report,BindingResult res, Model model) {
+    public String update(@PathVariable("id") Integer id,@Validated Report report, @AuthenticationPrincipal UserDetail userdetail,BindingResult res, Model model) {
         if(res.hasErrors()) {
             // エラーあり
-            return getReport(null,model,report);
+            return getReport(null,userdetail,model,report);
         }
         
         try {
-            ErrorKinds result = reportService.update(report);
+            ErrorKinds result = reportService.update(userdetail,report,id);
 
             if (ErrorMessage.contains(result)) {
                 model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
-                return getReport(null,model,report);
+                return getReport(null,userdetail,model,report);
             }
 
         } catch (DataIntegrityViolationException e) {
             model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.DUPLICATE_EXCEPTION_ERROR),
                     ErrorMessage.getErrorValue(ErrorKinds.DUPLICATE_EXCEPTION_ERROR));
-            return getReport(null,model,report);
+            return getReport(null, userdetail, model, report);
         }
 
         return "redirect:/reports";

@@ -31,19 +31,19 @@ private final ReportRepository reportRepository;
     // 日報新規登録
     @Transactional
     public ErrorKinds save(Report report,UserDetail userdetail) {
-        /*
-         * if(reportRepository.existsByEmployeeAndReportDate(employee,report.
-         * getReportDate())){ return ErrorKinds.DATECHECK_ERROR; }
-         */
         
-        if(userdetail.getEmployee().getCreatedAt().toLocalDate().isEqual(report.getReportDate())) {
+        if (reportRepository.existsByEmployeeAndReportDate(userdetail.getEmployee(), report.getReportDate())) {
             return ErrorKinds.DATECHECK_ERROR;
         }
+        /*
+         * if(reportRepository.findById(report.getId()).get().getReportDate().isEqual(
+         * report.getReportDate())) { return ErrorKinds.DATECHECK_ERROR; }
+         */
         report.setDeleteFlg(false);
         LocalDateTime now = LocalDateTime.now();
-        
         report.setCreatedAt(now);
         report.setUpdatedAt(now);
+        report.setEmployee(userdetail.getEmployee());
 
         reportRepository.save(report);
         return ErrorKinds.SUCCESS;
@@ -94,12 +94,20 @@ private final ReportRepository reportRepository;
     
     //日報更新
     @Transactional
-    public ErrorKinds update(Report report) {
+    public ErrorKinds update(UserDetail userdetail,Report report,Integer id) {
+        if (reportRepository.existsByEmployeeAndReportDate(userdetail.getEmployee(), report.getReportDate()) 
+                && reportRepository.findById(id) != null) {
+            return ErrorKinds.DATECHECK_ERROR;
+          
+        }
+        
         Report updateReport = findById(report.getId());
+        report.setDeleteFlg(false);
         LocalDateTime now = LocalDateTime.now();
         updateReport.setTitle(report.getTitle());
+        updateReport.setReportDate(report.getReportDate());
         updateReport.setContent(report.getContent());
-        updateReport.setCreatedAt(report.getCreatedAt());
+        updateReport.setCreatedAt(reportRepository.findById(report.getId()).get().getCreatedAt());
         updateReport.setUpdatedAt(now);
         reportRepository.save(updateReport);
         return ErrorKinds.SUCCESS;
