@@ -119,8 +119,8 @@ public class ReportController {
 
     // 日報更新処理
     @PostMapping(value = "/{id}/update")
-    public String update(@PathVariable("id") Integer id, @Validated Report report,
-            @AuthenticationPrincipal UserDetail userdetail, BindingResult res, Model model) {
+    public String update(@PathVariable("id") Integer id, @Validated Report report,BindingResult res,
+            @AuthenticationPrincipal UserDetail userdetail,  Model model) {
         if (res.hasErrors()) {
             // エラーあり
             return getReport(null, userdetail, model, report);
